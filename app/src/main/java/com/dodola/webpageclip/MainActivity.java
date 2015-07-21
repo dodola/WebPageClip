@@ -1,5 +1,6 @@
 package com.dodola.webpageclip;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,7 +13,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -40,8 +40,17 @@ import java.util.regex.Matcher;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private FloatingActionButton mOpenLinkBtn;
     private WebView mWebview;
+    /**
+     * 加载等待框
+     */
     private LoadToast lt;
-    public static final String DODO_FOLDER_PATH = (Environment.getExternalStorageDirectory() + "/dodo-clip");
+    /**
+     * 文件保存路径
+     */
+    private static final String DODO_FOLDER_PATH = (Environment.getExternalStorageDirectory() + "/dodo-clip");
+    /**
+     * 保存webview的可见区域尺寸
+     */
     private Rect webViewRect;
 
     @Override
@@ -66,24 +75,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         Intent receivedIntent = getIntent();
-        String receivedAction = receivedIntent.getAction();
-        if (receivedAction.equals(Intent.ACTION_SEND)) {
-            String filePathFromActivity = receivedIntent.getStringExtra(Intent.EXTRA_TEXT);
+        initIntent(receivedIntent);
 
+    }
 
-            //提取url
-            if (!TextUtils.isEmpty(filePathFromActivity)) {
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        initIntent(intent);
+    }
 
-                final Matcher matcher = Patterns.WEB_URL.matcher(filePathFromActivity);
-                while (matcher.find()) {
-                    final String group = matcher.group();
-                    lt.show();
-                    mWebview.loadUrl(group);
-                    break;
+    /**
+     * 处理接收到的分享内容
+     *
+     * @param intent
+     */
+    private void initIntent(Intent intent) {
+        if (intent != null) {
+            String receivedAction = intent.getAction();
+            if (receivedAction.equals(Intent.ACTION_SEND)) {
+                String filePathFromActivity = intent.getStringExtra(Intent.EXTRA_TEXT);
+                //提取url
+                if (!TextUtils.isEmpty(filePathFromActivity)) {
+                    //通过正则提取内容里的url
+                    final Matcher matcher = Patterns.WEB_URL.matcher(filePathFromActivity);
+                    while (matcher.find()) {
+                        final String group = matcher.group();
+                        lt.show();
+                        mWebview.loadUrl(group);
+                        break;
+                    }
                 }
             }
         }
-
     }
 
     @Override
@@ -113,13 +137,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.open_link_btn: {
-                OpenCategroyDialogBox();
+                OpenInputUrlDialogBox();
             }
             break;
         }
     }
 
-    private void OpenCategroyDialogBox() {
+    /**
+     * 打开输入连接对话框
+     */
+    private void OpenInputUrlDialogBox() {
 
         LayoutInflater layoutInflater = LayoutInflater.from(this);
         View promptView = layoutInflater.inflate(R.layout.dialog_input, null);
@@ -154,13 +181,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         alert1.show();
     }
 
-
+    /**
+     * 保存bitmap到文件
+     *
+     * @param bitmap
+     * @param path
+     * @return
+     */
     private final String saveToFile(Bitmap bitmap, String path) {
         File file = new File(path);
         if (!file.exists()) {
             file.mkdir();
         }
-        String str = file.getAbsolutePath() + "/" + formatDate(System.currentTimeMillis(), "yyMMdd-HHmmss-SSSS") + ".jpg";
+        String str = file.getAbsolutePath() + "/" + formatDate(System.currentTimeMillis(), "yyMMddHHmmssSSSS") + ".jpg";
         try {
             OutputStream fileOutputStream = new FileOutputStream(str);
             if (fileOutputStream != null) {
@@ -174,24 +207,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return null;
     }
 
-    public static String formatDate(long date, String str) {
+    /**
+     * 格式化时间格式
+     *
+     * @param date
+     * @param str
+     * @return
+     */
+    private String formatDate(long date, String str) {
         return new SimpleDateFormat(str).format(new Date(date));
     }
 
 
+    /**
+     * 保存图片到文件
+     */
     private void save() {
 
         AsyncTask<Bitmap, Void, String> saveTask = new AsyncTask<Bitmap, Void, String>() {
+            ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+
             @Override
             protected void onPostExecute(String resultFile) {
                 super.onPostExecute(resultFile);
                 calcLayout(false);
+                if (!TextUtils.isEmpty(resultFile)) {
+                    showImage(resultFile);
+                }
+                progressDialog.setMessage("处理完成。。。");
+                progressDialog.dismiss();
             }
 
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-
+                progressDialog.setIndeterminate(true);
+                progressDialog.setMessage("处理中。。。");
+                progressDialog.show();
             }
 
             @Override
@@ -200,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String resultFile = null;
                 if (bitmap != null)
                     resultFile = saveToFile(bitmap, DODO_FOLDER_PATH);
+                bitmap.recycle();
                 return resultFile;
             }
         };
@@ -215,10 +268,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             saveTask.execute(createBitmap);
 
         }
-
     }
 
-
+    /**
+     * 计算页面尺寸
+     *
+     * @param enableDrawingCache
+     */
     private void calcLayout(boolean enableDrawingCache) {
         if (this.webViewRect == null || this.webViewRect.isEmpty()) {
             this.webViewRect = new Rect(this.mWebview.getLeft(), this.mWebview.getTop(), this.mWebview.getRight(), this.mWebview.getBottom());
@@ -233,10 +289,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.mWebview.layout(this.webViewRect.left, this.webViewRect.top, this.webViewRect.right, enableDrawingCache ? this.mWebview.getMeasuredHeight() : this.webViewRect.bottom);
     }
 
-    public final void showImage(Context context, String str) {
+    /**
+     * 打开系统相册,查看文件
+     *
+     * @param str
+     */
+    public final void showImage(String str) {
         Intent intent = new Intent("android.intent.action.VIEW");
         intent.setDataAndType(Uri.fromFile(new File(str)), "image/*");
-        context.startActivity(intent);
+        startActivity(intent);
     }
 
 }
