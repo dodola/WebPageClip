@@ -60,8 +60,8 @@
       <file leaf-file-name="AndroidManifest.xml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.1463964">
-              <caret line="5" column="80" selection-start-line="5" selection-start-column="80" selection-end-line="5" selection-end-column="80" />
+            <state vertical-scroll-proportion="0.7027027">
+              <caret line="24" column="19" selection-start-line="24" selection-start-column="19" selection-end-line="24" selection-end-column="19" />
               <folding />
             </state>
           </provider>
@@ -1842,7 +1842,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="104" y="24" width="1440" height="820" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1928,8 +1928,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.1463964">
-          <caret line="5" column="80" selection-start-line="5" selection-start-column="80" selection-end-line="5" selection-end-column="80" />
+        <state vertical-scroll-proportion="0.7027027">
+          <caret line="24" column="19" selection-start-line="24" selection-start-column="19" selection-end-line="24" selection-end-column="19" />
           <folding />
         </state>
       </provider>

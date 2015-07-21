@@ -16,7 +16,8 @@ Clip the whole webpage
 ##issue
 1. OOM bug 将采用分段式的图片合成功能
 
-
+##Dependencies
+loadtoast:[loadtoast](https://github.com/code-mc/loadtoast)
 
 ##LICENSE
 
